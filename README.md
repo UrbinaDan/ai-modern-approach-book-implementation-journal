@@ -1,4 +1,14 @@
 # ai-modern-approach-book-implementation-journal
+
+# How to use?
+When first creating a environment for each chapter do: 
+ ```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install numpy matplotlib pandas
+ ```
+
+ 
 *A learning journal and codebase for **Artificial Intelligence: A Modern Approach** (Russell & Norvig).*
 
 This repository documents my journey through AIMA chapter by chapter.  
