@@ -1,0 +1,4 @@
+# search_lab/problems/__init__.py
+from .romania import romania_problem, RomaniaMap
+
+__all__ = ["romania_problem", "RomaniaMap"]

@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "algo": "BFS",
+      "success": true,
+      "cost": 450.0,
+      "nodes_expanded": 6,
+      "time_s": 0.00018669800010684412,
+      "peak_kb": 3,
+      "error": null
+    },
+    {
+      "algo": "UCS",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 12,
+      "time_s": 0.0003493309995974414,
+      "peak_kb": 2,
+      "error": null
+    },
+    {
+      "algo": "Greedy",
+      "success": true,
+      "cost": 450.0,
+      "nodes_expanded": 3,
+      "time_s": 0.00010914399990724633,
+      "peak_kb": 1,
+      "error": null
+    },
+    {
+      "algo": "A*",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 5,
+      "time_s": 0.00017197099987242837,
+      "peak_kb": 1,
+      "error": null
+    }
+  ],
+  "ts": 1755579555.7465045
+}
