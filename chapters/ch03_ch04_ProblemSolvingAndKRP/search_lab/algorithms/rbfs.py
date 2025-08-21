@@ -4,36 +4,66 @@
 # RBFS maintains a limited memory footprint by only storing the current path and its cost, making it suitable for problems with high branching factors.
 # The algorithm recursively explores the most promising nodes based on their estimated cost, backtracking when necessary.
 from __future__ import annotations
-from typing import Tuple
+from typing import Tuple, Optional
 from ..core.node import Node
-from ..core.metrics import SearchResult, MeasuredRun
 from ..core.problem import Problem
 from ..core.utils import reconstruct_path
+from ..core.metrics import SearchResult, MeasuredRun
 
-def rbfs(problem: Problem) -> SearchResult:
+try:
+    from .heuristics import h_sld as default_h
+except Exception:  # pragma: no cover
+    def default_h(node: Node) -> float:  # type: ignore
+        return 0.0
+
+def _t(meter: MeasuredRun) -> float | None:
+    return getattr(meter, "time_s", getattr(meter, "elapsed", None))
+
+def recursive_best_first_search(problem: Problem, h=default_h) -> SearchResult:
+    """
+    RBFS: Recursive Best-First Search (linear memory).
+    Mimics best-first with an f-limit; backs up best-alternative f-values on unwind.
+    """
     name = "RBFS"
     expanded = 0
 
-    def rbfs_rec(node: Node, flimit: float) -> Tuple[Node | None, float]:
-        nonlocal expanded
-        f = node.path_cost + problem.heuristic(node.state)
-        if problem.is_goal(node.state): return node, f
-        successors = list(node.expand(problem))
-        if not successors: return None, float("inf")
-        for s in successors:
-            s.f = s.path_cost + problem.heuristic(s.state)
-        while True:
-            successors.sort(key=lambda n: n.f)
-            best = successors[0]
-            if best.f > flimit: return None, best.f
-            alternative = successors[1].f if len(successors) > 1 else float("inf")
-            expanded += 1
-            result, best.f = rbfs_rec(best, min(flimit, alternative))
-            if result is not None: return result, best.f
-
     with MeasuredRun() as meter:
-        n, _ = rbfs_rec(Node(problem.initial_state()), float("inf"))
-        if n:
-            a,c = reconstruct_path(n)
-            return SearchResult(name, True, a, c, expanded, meter.elapsed, meter.peak_kb)
-        return SearchResult(name, False, [], float("inf"), expanded, meter.elapsed, meter.peak_kb)
+        root = Node(problem.initial_state())
+        if problem.is_goal(root.state):
+            a, c = reconstruct_path(root)
+            return SearchResult(name, True, a, c, 0, _t(meter), meter.peak_kb)
+
+        def rbfs(node: Node, f_limit: float) -> Tuple[Optional[Node], float]:
+            nonlocal expanded
+            if problem.is_goal(node.state):
+                return node, node.path_cost + h(node)
+
+            # Generate successors
+            children = list(node.expand(problem))
+            expanded += 1
+            if not children:
+                return None, float("inf")
+
+            # Each child carries an 'f' value
+            for c in children:
+                c.f = max(c.path_cost + h(c), getattr(node, "f", node.path_cost + h(node)))  # type: ignore
+
+            while True:
+                # Best child and best alternative
+                children.sort(key=lambda n: n.f)  # type: ignore
+                best = children[0]
+                if best.f > f_limit:  # type: ignore
+                    return None, best.f  # type: ignore
+                alternative = children[1].f if len(children) > 1 else float("inf")  # type: ignore
+                result, best.f = rbfs(best, min(f_limit, alternative))  # type: ignore
+                if result is not None:
+                    return result, best.f
+
+        # Seed f on root
+        root.f = root.path_cost + h(root)  # type: ignore
+        sol, _ = rbfs(root, float("inf"))
+        if sol:
+            a, c = reconstruct_path(sol)
+            return SearchResult(name, True, a, c, expanded, _t(meter), meter.peak_kb)
+
+    return SearchResult(name, False, [], float("inf"), expanded, _t(meter), meter.peak_kb)

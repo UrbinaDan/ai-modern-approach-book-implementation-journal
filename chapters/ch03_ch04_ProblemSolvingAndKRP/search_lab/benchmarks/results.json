@@ -5,7 +5,7 @@
       "success": true,
       "cost": 450.0,
       "nodes_expanded": 6,
-      "time_s": 0.00018669800010684412,
+      "time_s": 0.00021142499986126495,
       "peak_kb": 3,
       "error": null
     },
@@ -14,16 +14,52 @@
       "success": true,
       "cost": 418.0,
       "nodes_expanded": 12,
-      "time_s": 0.0003493309995974414,
+      "time_s": 0.00019820000011350203,
       "peak_kb": 2,
       "error": null
+    },
+    {
+      "algo": "DFS",
+      "success": true,
+      "cost": 733.0,
+      "nodes_expanded": 7,
+      "time_s": 0.00015458799998668837,
+      "peak_kb": 1,
+      "error": null
+    },
+    {
+      "algo": "DLS(l=12)",
+      "success": true,
+      "cost": 1050.0,
+      "nodes_expanded": 27,
+      "time_s": 0.0005000450000807177,
+      "peak_kb": 6,
+      "error": null
+    },
+    {
+      "algo": "IDS",
+      "success": true,
+      "cost": 450.0,
+      "nodes_expanded": 11,
+      "time_s": 0.0002029790000506182,
+      "peak_kb": 2,
+      "error": null
+    },
+    {
+      "algo": "Bi-UCS",
+      "success": false,
+      "error": "AttributeError(\"'PriorityQueue' object has no attribute 'top'\")",
+      "nodes_expanded": null,
+      "cost": null,
+      "time_s": null,
+      "peak_kb": null
     },
     {
       "algo": "Greedy",
       "success": true,
       "cost": 450.0,
       "nodes_expanded": 3,
-      "time_s": 0.00010914399990724633,
+      "time_s": 0.00012171799994575849,
       "peak_kb": 1,
       "error": null
     },
@@ -32,10 +68,118 @@
       "success": true,
       "cost": 418.0,
       "nodes_expanded": 5,
-      "time_s": 0.00017197099987242837,
+      "time_s": 0.00014181500000631786,
       "peak_kb": 1,
+      "error": null
+    },
+    {
+      "algo": "Bi-A*",
+      "success": false,
+      "error": "AttributeError(\"'PriorityQueue' object has no attribute 'top'\")",
+      "nodes_expanded": null,
+      "cost": null,
+      "time_s": null,
+      "peak_kb": null
+    },
+    {
+      "algo": "IDA*",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 1268,
+      "time_s": 0.01867305399991892,
+      "peak_kb": 7,
+      "error": null
+    },
+    {
+      "algo": "RBFS",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 372,
+      "time_s": 0.007910126999831846,
+      "peak_kb": 3,
+      "error": null
+    },
+    {
+      "algo": "SMA*(N=50000)",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 52,
+      "time_s": 0.0015583310000693018,
+      "peak_kb": 37,
+      "error": null
+    },
+    {
+      "algo": "Beam(k=10)",
+      "success": true,
+      "cost": 450.0,
+      "nodes_expanded": 8,
+      "time_s": 0.00012513299998317962,
+      "peak_kb": 2,
+      "error": null
+    },
+    {
+      "algo": "WeightedA*(w=1.5)",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 12,
+      "time_s": 0.00018993499998032348,
+      "peak_kb": 2,
+      "error": null
+    },
+    {
+      "algo": "Bidirectional UCS",
+      "success": false,
+      "error": "AttributeError(\"'PriorityQueue' object has no attribute 'top'\")",
+      "nodes_expanded": null,
+      "cost": null,
+      "time_s": null,
+      "peak_kb": null
+    },
+    {
+      "algo": "Bidirectional A*",
+      "success": false,
+      "error": "AttributeError(\"'PriorityQueue' object has no attribute 'top'\")",
+      "nodes_expanded": null,
+      "cost": null,
+      "time_s": null,
+      "peak_kb": null
+    },
+    {
+      "algo": "IDA*",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 1268,
+      "time_s": 0.022615950000044904,
+      "peak_kb": 3,
+      "error": null
+    },
+    {
+      "algo": "RBFS",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 372,
+      "time_s": 0.007610718000023553,
+      "peak_kb": 3,
+      "error": null
+    },
+    {
+      "algo": "SMA*(N=1000)",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 52,
+      "time_s": 0.0026529060000939353,
+      "peak_kb": 31,
+      "error": null
+    },
+    {
+      "algo": "WeightedA*(w=1.5)",
+      "success": true,
+      "cost": 418.0,
+      "nodes_expanded": 12,
+      "time_s": 0.00018263200013279857,
+      "peak_kb": 2,
       "error": null
     }
   ],
-  "ts": 1755579555.7465045
+  "ts": 1755806908.6495776
 }

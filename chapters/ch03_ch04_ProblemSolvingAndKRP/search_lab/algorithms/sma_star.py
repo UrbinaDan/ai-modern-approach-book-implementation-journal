@@ -3,57 +3,100 @@
 # SMA* is designed to handle large search spaces by dropping the worst leaf nodes when the memory limit is reached.
 # It maintains a balance between exploration and exploitation by backing up f estimates shallowly, allowing it to find solutions in memory-constrained environments.
 from __future__ import annotations
-from typing import Dict, List
-import heapq
+from typing import Dict, List, Optional
 from ..core.node import Node
-from ..core.metrics import SearchResult, MeasuredRun
 from ..core.problem import Problem
+from ..core.metrics import SearchResult, MeasuredRun
 from ..core.utils import reconstruct_path
 
-class _SMAQueue:
-    """Frontier that can drop worst leaf when size > cap."""
-    def __init__(self, key, cap:int):
-        self.key = key; self.cap = cap
-        self.h: List[tuple] = []
-        self.counter = 0
-    def push(self, x):
-        self.counter += 1
-        heapq.heappush(self.h, (self.key(x), self.counter, x))
-        if len(self.h) > self.cap:
-            # drop worst leaf: this is a min-heap; 'worst' = max f. We pop all to find worst.
-            worst_i = max(range(len(self.h)), key=lambda i: self.h[i][0])
-            self.h.pop(worst_i)
-            heapq.heapify(self.h)
-    def pop(self): return heapq.heappop(self.h)[2]
-    def __len__(self): return len(self.h)
-    def peek(self): return self.h[0][2]
+from heapq import heappush, heappop
 
-def sma_star(problem: Problem, memory_nodes:int=5000) -> SearchResult:
-    """Simplified memory-bounded A* (drops worst leaves; backs up f estimates shallowly)."""
-    name = f"SMA*(cap={memory_nodes})"
-    start = Node(problem.initial_state())
-    start.f = problem.heuristic(start.state)
-    frontier = _SMAQueue(key=lambda n: n.path_cost + problem.heuristic(n.state), cap=memory_nodes)
-    frontier.push(start)
+try:
+    from .heuristics import h_sld as default_h
+except Exception:  # pragma: no cover
+    def default_h(node: Node) -> float:  # type: ignore
+        return 0.0
+
+def _t(meter: MeasuredRun) -> float | None:
+    return getattr(meter, "time_s", getattr(meter, "elapsed", None))
+
+class _PQ:
+    def __init__(self): self.h=[]; self.c=0
+    def push(self, prio: float, node: Node): heappush(self.h,(prio,self.c,node)); self.c+=1
+    def pop(self)->Node: return heappop(self.h)[2]
+    def top_prio(self)->float: return self.h[0][0]
+    def __len__(self): return len(self.h)
+    def remove_worst(self)->Node:
+        # Grab worst by scanning (small fronts); OK for teaching-scale problems
+        idx=max(range(len(self.h)),key=lambda i:self.h[i][0])
+        _,_,n=self.h.pop(idx)
+        return n
+
+def sma_star_search(problem: Problem, h=default_h, max_nodes: int = 1000) -> SearchResult:
+    """
+    SMA*: Memory-bounded A*. Keeps at most `max_nodes` leaves.
+    Drops the worst f-leaf when memory is full, backing up f to its parent.
+    """
+    name = f"SMA*(N={max_nodes})"
     expanded = 0
-    best_goal = None
 
     with MeasuredRun() as meter:
-        while len(frontier):
-            node = frontier.pop()
-            if problem.is_goal(node.state):
-                best_goal = node
-                break
-            expanded += 1
-            children = list(node.expand(problem))
-            if not children:
-                # dead-end; mark with inf f so its parent can deprioritize it
-                node.f = float("inf")
-            for c in children:
-                c.f = c.path_cost + problem.heuristic(c.state)
-                frontier.push(c)
+        root = Node(problem.initial_state())
+        if problem.is_goal(root.state):
+            a,c=reconstruct_path(root)
+            return SearchResult(name, True, a, c, 0, _t(meter), meter.peak_kb)
 
-        if best_goal:
-            a,c = reconstruct_path(best_goal)
-            return SearchResult(name, True, a, c, expanded, meter.elapsed, meter.peak_kb)
-        return SearchResult(name, False, [], float("inf"), expanded, meter.elapsed, meter.peak_kb)
+        frontier = _PQ()
+        fval: Dict[Node, float] = {}
+        children: Dict[Node, List[Node]] = {}
+
+        def f(n: Node) -> float:
+            return n.path_cost + h(n)
+
+        fval[root] = f(root)
+        frontier.push(fval[root], root)
+
+        best_solution: Optional[Node] = None
+        best_solution_cost = float("inf")
+
+        def backup(n: Node):
+            # Parent's f is min child f, recursively propagate
+            p = n.parent
+            while p is not None:
+                if children.get(p):
+                    best = min(fval[c] for c in children[p])
+                    if best > fval.get(p, float("inf")):
+                        fval[p] = best
+                    else:
+                        fval[p] = best
+                p = p.parent
+
+        while frontier:
+            node = frontier.pop()
+
+            if problem.is_goal(node.state):
+                a,c = reconstruct_path(node)
+                return SearchResult(name, True, a, c, expanded, _t(meter), meter.peak_kb)
+
+            # expand
+            succs = list(node.expand(problem))
+            expanded += 1
+            children[node] = succs
+
+            if not succs:
+                fval[node] = float("inf")
+                backup(node)
+                continue
+
+            for s in succs:
+                fval[s] = max(f(s), fval.get(node, f(node)))  # monotone backup
+                frontier.push(fval[s], s)
+
+            # enforce memory bound over leaves
+            while len(frontier) > max_nodes:
+                worst = frontier.remove_worst()
+                # Forget worst leaf; back up info to parent
+                fval[worst] = fval.get(worst, f(worst))
+                backup(worst)
+
+    return SearchResult(name, False, [], float("inf"), expanded, _t(meter), meter.peak_kb)
