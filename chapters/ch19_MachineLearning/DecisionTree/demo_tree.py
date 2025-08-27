@@ -1,3 +1,6 @@
+#This code implements id3 and c4.5 decision tree algorithms
+#and visualizes the resulting tree using treePlotter.py
+
 from id3_c45 import DecisionTree          # <-- your class file
 import numpy as np
 import treePlotter                        # <-- matches treePlotter.py
