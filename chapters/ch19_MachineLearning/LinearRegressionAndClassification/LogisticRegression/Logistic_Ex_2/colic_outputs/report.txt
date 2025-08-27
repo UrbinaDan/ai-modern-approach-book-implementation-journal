@@ -1,0 +1,15 @@
+[sklearn] acc=0.731343
+Confusion:
+[[13  7]
+ [11 36]]
+
+[custom-batch] acc=0.716418
+Confusion:
+[[ 2 18]
+ [ 1 46]]
+
+[custom-sgd]   acc=0.746269
+Confusion:
+[[17  3]
+ [14 33]]
+
